@@ -1,0 +1,6 @@
+train: D:\Research\Shuttle tracking\train
+val: D:\Research\Shuttle tracking\val
+
+nc: 4
+
+names: ["c1", "c2", "net_level", "shuttle"]

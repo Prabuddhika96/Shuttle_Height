@@ -1,0 +1,92 @@
+from ultralytics import YOLO
+import cv2
+from ultralytics.utils.plotting import Annotator
+import matplotlib.pyplot as plt
+
+# Initialize the YOLO model
+model = YOLO('best.pt')
+
+cap = cv2.VideoCapture(r"shuttle_19.jpg")
+cap.set(3, 640)
+cap.set(4, 480)
+
+while True:
+    _, img = cap.read()
+    c1x1=0
+    c1y1=0
+    c1x2=0
+    c1y2=0
+    c1mx=0
+    c1my=0
+
+    c2x1=0
+    c2y1=0
+    c2x2=0
+    c2y2=0
+    c2mx=0
+    c2my=0
+
+    nx1=0
+    ny1=0
+    nx2=0
+    ny2=0
+    nmx=0
+    nmy=0
+
+    sx1=0
+    sy1=0
+    sx2=0
+    sy2=0
+    smx=0
+    smy=0
+    
+    # BGR to RGB conversion is performed under the hood
+    # see: https://github.com/ultralytics/ultralytics/issues/2575
+    results = model.predict(img)
+
+    for r in results:
+        
+        annotator = Annotator(img)
+        
+        boxes = r.boxes
+        for box in boxes:
+            
+            b = box.xyxy[0]  # get box coordinates in (left, top, right, bottom) format
+            c = box.cls
+            # print(c)
+            annotator.box_label(b, model.names[int(c)])
+
+            if(model.names[int(c)] == "c1"):
+                c1x1,c1y1,c1x2,c1y2 =b
+                c1mx,c1my=((int(c1x1) + int(c1x2)) // 2, (int(c1y1) + int(c1y2)) // 2)
+                # Draw points at (x1, y1) and (x2, y2) within the bounding box
+                # cv2.circle(img, (int(c1x1), int(c1y1)), 5, (0, 255, 0), -1)  # Green point at (c1x1, c1y1)
+                # cv2.circle(img, (int(c1x2), int(c1y2)), 5, (0, 0, 255), -1)  # Red point at (c1x2, c1y2)
+                cv2.circle(img, (int(c1mx), int(c1my)), 5, (255, 0, 0), -1)  # Blue point at the middle
+                # cv2.circle(img, ((int(c1x1) + int(c1x2)) // 2, (int(c1y1) + int(c1y2)) // 2), 5, (255, 0, 0), -1)  # Blue point at the middle
+            elif(model.names[int(c)] == "c2"):
+                sx1,sy1,sx2,sy2 =b
+            elif(model.names[int(c)] == "net_level"):
+                nx1,ny1,nx2,ny2 =b
+
+                # Draw points at (x1, y1) and (x2, y2) within the bounding box
+                # cv2.circle(img, (int(x1), int(y1)), 5, (0, 255, 0), -1)  # Green point at (x1, y1)
+                # cv2.circle(img, (int(x2), int(y2)), 5, (0, 0, 255), -1)  # Red point at (x2, y2)
+                # cv2.circle(img, ((int(x1) + int(x2)) // 2, (int(y1) + int(y2)) // 2), 5, (255, 0, 0), -1)  # Blue point at the middle
+    
+    img = annotator.result()  
+
+    # Convert BGR to RGB for Matplotlib display
+    img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    
+    # Display using Matplotlib
+    plt.imshow(img_rgb)
+    plt.axis('off')  # Hide axes
+    plt.show()
+          
+    # img = annotator.result()  
+    # cv2.imshow('YOLO V8 Detection', img)  
+    # if cv2.waitKey(1) & 0xFF == ord(' '):
+    #     break
+
+cap.release()
